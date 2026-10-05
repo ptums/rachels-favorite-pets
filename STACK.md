@@ -1,0 +1,39 @@
+# Stack decision: Rachel's Favorite Pets migration
+
+Recorded: 2026-10-04. Baseline: see BASELINE.md (tag `legacy-baseline`).
+
+| Layer         | Choice                                                                                                                                                                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend      | Angular (current version), in `client/`                                                                                                                                                                                               |
+| Backend       | ASP.NET Core Web API (C#), in `api/`                                                                                                                                                                                                  |
+| Database      | Azure Cosmos DB, native NoSQL API, through EF Core's Cosmos provider. Local development uses the Cosmos DB emulator                                                                                                                   |
+| Photo storage | Azure Blob Storage. Azurite emulator locally                                                                                                                                                                                          |
+| Login         | Three modes set by `AUTH_MODE`: open, owner, accounts. Build owner first                                                                                                                                                              |
+| Auth          | ASP.NET Core built-in cookie authentication and `[Authorize]`, the framework's password hasher, and our own `users` container in Cosmos DB (accounts mode). Owner mode reads a hashed password from configuration                     |
+| Configuration | Settings in `appsettings` and environment variables. Local values stay in an uncommitted file, and an example file is committed. The emulators use publicly documented development credentials, so this project holds no real secrets |
+| Cloud         | Azure services through local emulators only (Cosmos DB emulator, Azurite). No Azure account, no hosting, no cost. The app is not deployed to real Azure                                                                               |
+| Repo          | One repo, two folders                                                                                                                                                                                                                 |
+| Dropped       | A swappable `DATABASE_URL`, hosting and deployment, and real Azure services. Managed identity is not used, since it only applies to apps running in Azure                                                                             |
+
+## What each choice should fix
+
+| Baseline finding                                              | How the new stack addresses it                                                                                                                                                                                             | How we will measure                                                      |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Cannot run from the repo; 9 undeclared packages; no lock file | Dependencies declared in `package.json` and `*.csproj`, lock file committed                                                                                                                                                | Setup steps and time from fresh clone to running                         |
+| Config file never documented (`settings.js`)                  | Settings come from environment variables; `.env.example` committed with fake values                                                                                                                                        | A fresh clone runs from `.env.example`                                   |
+| Plain-text password comparison                                | Passwords hashed by the framework                                                                                                                                                                                          | Test: stored value is not the typed password                             |
+| Hardcoded session secret                                      | Secrets read from the environment                                                                                                                                                                                          | Search of the repo finds no secrets                                      |
+| Upload accepted before login check; no type or size limits    | Authorization enforced before the upload handler; type and size limits                                                                                                                                                     | Tests: logged-out upload rejected, oversized or wrong-type file rejected |
+| Path traversal in delete; delete leaves the database row      | Files addressed by generated IDs, not user-supplied paths; delete removes record and file                                                                                                                                  | Tests for both                                                           |
+| Calls that fail on Node 22                                    | Current supported runtimes                                                                                                                                                                                                 | App starts on current versions                                           |
+| 3 high vulnerabilities                                        | Current dependencies                                                                                                                                                                                                       | `npm audit` and `dotnet list package --vulnerable` show 0 high           |
+| No tests                                                      | Automated tests for auth modes, upload rules, delete                                                                                                                                                                       | Test count and pass rate                                                 |
+| Auth                                                          | ASP.NET Core built-in cookie authentication and `[Authorize]`, with the framework's password hasher and our own `users` collection in Mongo (accounts mode). Owner mode reads a hashed password from environment variables |
+
+## To verify before building
+
+- Whether the Cosmos DB emulator runs on this Mac (Apple Silicon). This is the first thing to test, and the build depends on it
+- Whether Azurite runs on this Mac
+- What the emulators don't support, compared with the real services
+- Current versions of Angular, .NET, and the EF Core Cosmos provider
+- Whether a community Identity package for Cosmos is worth using, or whether our own users container is simpler
