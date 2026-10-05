@@ -1,1 +1,10 @@
+# .NET build output
+bin/
+obj/
+
+# Local settings and secrets (never commit)
+.env
+.env.*
+!.env.example
+**/appsettings.Local.json
 node_modules/*
