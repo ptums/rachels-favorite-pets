@@ -30,6 +30,15 @@ Recorded: 2026-10-04. Baseline: see BASELINE.md (tag `legacy-baseline`).
 | No tests                                                      | Automated tests for auth modes, upload rules, delete                                                                                                                                                                       | Test count and pass rate                                                 |
 | Auth                                                          | ASP.NET Core built-in cookie authentication and `[Authorize]`, with the framework's password hasher and our own `users` collection in Mongo (accounts mode). Owner mode reads a hashed password from environment variables |
 
+## Verified (2026-10-04)
+
+| Item                                            | Result | How it was checked                                                                                                                                                                                                     |
+| ----------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cosmos DB vNext Linux emulator on Apple Silicon | Works  | Image `mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview` pulled on arm64 with Docker 28.2.2. Container started. Data Explorer loaded at localhost:1234 and the endpoint answered at localhost:8081 |
+| Azurite (Blob Storage emulator)                 | Works  | Container started with `azurite-blob --blobHost 0.0.0.0`. Log said "Azurite Blob service successfully listens on http://0.0.0.0:10000"                                                                                 |
+
+Not yet verified: that C# code can connect to either emulator, which Cosmos features the emulator supports compared with the real service, and how the app authenticates to each.
+
 ## To verify before building
 
 - Whether the Cosmos DB emulator runs on this Mac (Apple Silicon). This is the first thing to test, and the build depends on it
