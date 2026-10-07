@@ -4,14 +4,14 @@ using Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
 using Azure.Storage.Blobs;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<string>();
-Console.WriteLine(hasher.HashPassword("owner", "tiger-lily-42"));
-Console.WriteLine(hasher.HashPassword("owner", "tiger-lily-42"));
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -19,6 +19,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.Configure<CosmosOptions>(builder.Configuration.GetSection(CosmosOptions.SectionName));
 builder.Services.Configure<BlobStorageOptions>(builder.Configuration.GetSection(BlobStorageOptions.SectionName));
+builder.Services.Configure<OwnerOptions>(builder.Configuration.GetSection(OwnerOptions.SectionName));
 
 var cosmos = builder.Configuration.GetSection(CosmosOptions.SectionName).Get<CosmosOptions>() ?? new CosmosOptions();
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -30,8 +31,21 @@ var blob = builder.Configuration.GetSection(BlobStorageOptions.SectionName).Get<
 builder.Services.AddSingleton(new BlobServiceClient(blob.ConnectionString));
 
 
-builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Events.OnRedirectToLogin = context =>
+        {
+            context.Response.StatusCode = 401;
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = 403;
+            return Task.CompletedTask;
+        };
+    });
 
 var app = builder.Build();
 
@@ -52,7 +66,33 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/me", () => "you are logged in").RequireAuthorization();
+
+// Authentication routes
+app.MapPost("/login", async (LoginRequest login, IOptions<OwnerOptions> owner, HttpContext http) =>
+{
+    var hasher = new PasswordHasher<string>();
+    var result = hasher.VerifyHashedPassword(owner.Value.Username, owner.Value.PasswordHash, login.Password);
+
+    if (result != PasswordVerificationResult.Success)
+    {
+        return Results.Unauthorized();
+    }
+
+    if(login.Username != owner.Value.Username)
+    {
+        return Results.Unauthorized();
+    }
+
+    //  On success, build the identity and sign in:
+    var claims = new List<Claim> { new Claim(ClaimTypes.Name, owner.Value.Username) };
+    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+    var principal = new ClaimsPrincipal(identity);
+    await http.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+    return Results.Ok();
+});
+
+
+// Photo uploading routes
 app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient blobService)=> 
 { 
 
@@ -71,14 +111,14 @@ app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient
     await blobClient.UploadAsync(stream, overwrite: true);
 
     return Results.Ok(photo.Id);
-}).DisableAntiforgery();
+}).DisableAntiforgery().RequireAuthorization();
 
 app.MapGet("/photos", async (AppDbContext db) => 
 { 
    var photos = await db.Photos.ToListAsync();
 
    return Results.Ok(photos);
-});
+}).RequireAuthorization();
 
 
 
@@ -97,7 +137,10 @@ app.MapGet("/photos/{id}/image", async (string id, AppDbContext db, BlobServiceC
 
     return Results.File(stream, photo.ContentType);
     
-});
+}).RequireAuthorization();
+
 
 app.Run();
+record LoginRequest(string Username, string Password);
+
 

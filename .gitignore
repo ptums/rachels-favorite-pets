@@ -8,3 +8,4 @@ obj/
 !.env.example
 **/appsettings.Local.json
 node_modules/*
+cookies.txt
