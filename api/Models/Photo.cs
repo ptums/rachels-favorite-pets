@@ -9,4 +9,6 @@ public class Photo
     public string ContentType { get; set; } = string.Empty;
 
     public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
+
+    public string? UploadedBy { get; set; }
 }

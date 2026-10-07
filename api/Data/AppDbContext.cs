@@ -9,6 +9,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<Cosmo
     : DbContext(options)
 {
     public DbSet<Photo> Photos => Set<Photo>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,5 +19,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IOptions<Cosmo
             photo.HasKey(p => p.Id);
             photo.HasPartitionKey(p => p.Id);
         });
-    }
+
+        modelBuilder.Entity<User>(u =>
+        {
+            u.ToContainer("users");
+            u.HasKey(x => x.Id);
+            u.HasPartitionKey(x => x.Id);
+        });
+    }  
 }
