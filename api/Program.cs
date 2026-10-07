@@ -4,6 +4,7 @@ using Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
+using Azure.Storage.Blobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseCosmos(cosmos.Endpoint, cosmos.Key, cosmos.DatabaseName,
         cosmosOptions => cosmosOptions.ConnectionMode(ConnectionMode.Gateway)));
 
+
+var blob = builder.Configuration.GetSection(BlobStorageOptions.SectionName).Get<BlobStorageOptions>() ?? new BlobStorageOptions();
+builder.Services.AddSingleton(new BlobServiceClient(blob.ConnectionString));
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -28,6 +33,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+var blobService = app.Services.GetRequiredService<BlobServiceClient>();
+var photosContainer = blobService.GetBlobContainerClient(blob.PhotosContainer);
+await photosContainer.CreateIfNotExistsAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
