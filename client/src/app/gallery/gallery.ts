@@ -40,7 +40,7 @@ export class Gallery implements OnInit {
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
 
   ngOnInit(): void {
-    void this.load();
+    if (this.session.canViewPhotos()) void this.load();
   }
 
   protected async load(): Promise<void> {
@@ -86,7 +86,7 @@ export class Gallery implements OnInit {
       this.selectedFile.set(null);
       const input = this.fileInput()?.nativeElement;
       if (input) input.value = '';
-      await this.load();
+      if (this.session.canViewPhotos()) await this.load();
     } catch (error) {
       this.error.set(describeError(error, 'upload'));
       await this.refreshIfLoggedOut(error);

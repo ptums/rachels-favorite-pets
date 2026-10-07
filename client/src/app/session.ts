@@ -14,6 +14,8 @@ export class Session {
 
   readonly canUpload = computed(() => this.mode() === 'open' || this.user() !== null);
   readonly canSignup = computed(() => this.mode() === 'accounts');
+  /** The API only serves images to logged-in users, so the gallery is for them too. */
+  readonly canViewPhotos = computed(() => this.user() !== null);
 
   canDelete(photo: Photo): boolean {
     const user = this.user();

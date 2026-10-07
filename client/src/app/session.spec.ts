@@ -55,6 +55,13 @@ describe('Session', () => {
     expect(session.canUpload()).toBe(true);
   });
 
+  it('shows photos only to a logged-in user, even in open mode', () => {
+    session.mode.set('open');
+    expect(session.canViewPhotos()).toBe(false);
+    session.user.set({ username: 'rachel', isOwner: false });
+    expect(session.canViewPhotos()).toBe(true);
+  });
+
   it('hides delete when logged out', () => {
     expect(session.canDelete(photo('rachel'))).toBe(false);
   });
