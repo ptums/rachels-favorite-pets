@@ -185,7 +185,17 @@ var uploadRoute = app.MapPost("/photos", async (IFormFile file, HttpContext http
 if (auth.Mode != "open") uploadRoute.RequireAuthorization();
 
 
-app.MapGet("/photos", async (AppDbContext db) => Results.Ok(await db.Photos.ToListAsync()));
+app.MapGet("/photos", async (AppDbContext db, HttpContext http) =>
+  {
+      var username = http.User.Identity?.Name;
+      if (username is null) return Results.Unauthorized();
+
+      var query = http.User.IsInRole("owner")
+          ? db.Photos
+          : db.Photos.Where(p => p.UploadedBy == username);
+
+      return Results.Ok(await query.OrderByDescending(p => p.UploadedAt).ToListAsync());
+  }).RequireAuthorization();
 
 app.MapGet("/photos/{id}/image", async (string id, AppDbContext db, BlobServiceClient blobService) => 
 { 
