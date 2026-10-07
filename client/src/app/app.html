@@ -1,0 +1,30 @@
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <a class="brand" routerLink="/">Rachel's Favorite Pets</a>
+
+  <nav aria-label="Account">
+    @if (session.user(); as user) {
+      <span class="who">Logged in as <strong>{{ user.username }}</strong></span>
+      <button type="button" class="link-button" (click)="logout()">Log out</button>
+    } @else if (session.mode() !== 'open') {
+      <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Log in</a>
+      @if (session.canSignup()) {
+        <a routerLink="/signup" routerLinkActive="active" ariaCurrentWhenActive="page">Sign up</a>
+      }
+    }
+  </nav>
+</header>
+
+@if (session.configError()) {
+  <p class="banner error" role="alert">
+    Could not reach the server. Check that the API is running, then reload the page.
+  </p>
+}
+@if (logoutError(); as message) {
+  <p class="banner error" role="alert">{{ message }}</p>
+}
+
+<main id="main" tabindex="-1">
+  <router-outlet />
+</main>

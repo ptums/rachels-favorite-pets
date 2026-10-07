@@ -1,0 +1,48 @@
+<div class="card auth-card">
+  <h1>Create an account</h1>
+
+  @if (error(); as message) {
+    <p class="banner error" role="alert">{{ message }}</p>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field">
+      <label for="signup-username">Username</label>
+      <input
+        id="signup-username"
+        formControlName="username"
+        autocomplete="username"
+        autocapitalize="none"
+        spellcheck="false"
+        required
+        [attr.aria-invalid]="form.controls.username.touched && form.controls.username.invalid"
+        aria-describedby="signup-username-hint"
+      />
+      <p id="signup-username-hint" [class]="form.controls.username.touched && form.controls.username.invalid ? 'field-error' : 'hint'">
+        3 to 32 characters: letters, numbers, - or _.
+      </p>
+    </div>
+
+    <div class="field">
+      <label for="signup-password">Password</label>
+      <input
+        id="signup-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        required
+        [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+        aria-describedby="signup-password-hint"
+      />
+      <p id="signup-password-hint" [class]="form.controls.password.touched && form.controls.password.invalid ? 'field-error' : 'hint'">
+        At least {{ minPasswordLength }} characters.
+      </p>
+    </div>
+
+    <button type="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Creating account…' : 'Sign up' }}
+    </button>
+  </form>
+
+  <p class="hint switch">Already have an account? <a routerLink="/login">Log in</a>.</p>
+</div>
