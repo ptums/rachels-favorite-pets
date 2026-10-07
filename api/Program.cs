@@ -3,11 +3,15 @@ using Api.Options;
 using Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
-using Microsoft.EntityFrameworkCore;
 using Azure.Storage.Blobs;
 using Microsoft.Azure.Cosmos.Linq;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var hasher = new Microsoft.AspNetCore.Identity.PasswordHasher<string>();
+Console.WriteLine(hasher.HashPassword("owner", "tiger-lily-42"));
+Console.WriteLine(hasher.HashPassword("owner", "tiger-lily-42"));
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -24,6 +28,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var blob = builder.Configuration.GetSection(BlobStorageOptions.SectionName).Get<BlobStorageOptions>() ?? new BlobStorageOptions();
 builder.Services.AddSingleton(new BlobServiceClient(blob.ConnectionString));
+
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -44,13 +52,14 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.MapGet("/health", () => "ok");
-app.MapPost("/photos", async (AppDbContext db) => 
+app.MapGet("/me", () => "you are logged in").RequireAuthorization();
+app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient blobService)=> 
 { 
+
     var photo = new Photo
     {
-        FileName = "cat1.jpg",
-        ContentType = "image/jpeg"
+        FileName = file.FileName,
+        ContentType = file.ContentType
     };
 
     db.Photos.Add(photo);
@@ -58,11 +67,11 @@ app.MapPost("/photos", async (AppDbContext db) =>
 
     var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
     var blobClient = container.GetBlobClient(photo.Id);
-    await using var file = File.OpenRead(Path.Combine(app.Environment.ContentRootPath, "..", "cat1.jpg"));
-    await blobClient.UploadAsync(file, overwrite: true);
+    await using var stream = file.OpenReadStream();
+    await blobClient.UploadAsync(stream, overwrite: true);
 
     return Results.Ok(photo.Id);
-});
+}).DisableAntiforgery();
 
 app.MapGet("/photos", async (AppDbContext db) => 
 { 
