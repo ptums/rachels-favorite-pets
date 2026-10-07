@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,11 @@ app.MapPost("/photos", async (AppDbContext db) =>
     db.Photos.Add(photo);
     await db.SaveChangesAsync();
 
+    var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
+    var blobClient = container.GetBlobClient(photo.Id);
+    await using var file = File.OpenRead(Path.Combine(app.Environment.ContentRootPath, "..", "cat1.jpg"));
+    await blobClient.UploadAsync(file, overwrite: true);
+
     return Results.Ok(photo.Id);
 });
 
@@ -66,6 +72,23 @@ app.MapGet("/photos", async (AppDbContext db) =>
 });
 
 
+
+app.MapGet("/photos/{id}/image", async (string id, AppDbContext db, BlobServiceClient blobService) => 
+{ 
+    var photo = await db.Photos.FindAsync(id);
+
+    if (photo == null) 
+    {
+        return Results.NotFound();
+    }
+
+    var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
+    var blobClient = container.GetBlobClient(photo.Id);
+    var stream = await blobClient.OpenReadAsync();
+
+    return Results.File(stream, photo.ContentType);
+    
+});
 
 app.Run();
 
