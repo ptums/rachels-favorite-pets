@@ -93,32 +93,46 @@ app.MapPost("/login", async (LoginRequest login, IOptions<OwnerOptions> owner, H
 
 
 // Photo uploading routes
-app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient blobService)=> 
-{ 
+app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient blobService) =>
+{
+    // 1. Size check
+    if (file.Length == 0 || file.Length > 5 * 1024 * 1024)
+    {
+        return Results.BadRequest("File must be between 1 byte and 5 MB.");
+    }
 
+    // 2. Type check: read the file's first bytes, don't trust the header
+    await using var stream = file.OpenReadStream();
+    var header = new byte[4];
+    var read = await stream.ReadAsync(header);
+
+    var isJpeg = read >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF;
+    var isPng = read >= 4 && header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47;
+
+    if (!isJpeg && !isPng)
+    {
+        return Results.BadRequest("Only JPEG and PNG images are allowed.");
+    }
+
+    stream.Position = 0; // rewind so the upload starts at byte one
+
+    // 3. Build the record, with the type we detected
     var photo = new Photo
     {
         FileName = file.FileName,
-        ContentType = file.ContentType
+        ContentType = isJpeg ? "image/jpeg" : "image/png"
     };
+
+    // 4. Upload the blob first, then save the record
+    var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
+    var blobClient = container.GetBlobClient(photo.Id);
+    await blobClient.UploadAsync(stream, overwrite: true);
 
     db.Photos.Add(photo);
     await db.SaveChangesAsync();
 
-    var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
-    var blobClient = container.GetBlobClient(photo.Id);
-    await using var stream = file.OpenReadStream();
-    await blobClient.UploadAsync(stream, overwrite: true);
-
     return Results.Ok(photo.Id);
 }).DisableAntiforgery().RequireAuthorization();
-
-app.MapGet("/photos", async (AppDbContext db) => 
-{ 
-   var photos = await db.Photos.ToListAsync();
-
-   return Results.Ok(photos);
-}).RequireAuthorization();
 
 
 
