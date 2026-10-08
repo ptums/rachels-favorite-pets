@@ -53,7 +53,7 @@ cd api
 dotnet run
 ```
 
-Open `http://localhost:5017`. Use that port, not the Angular dev server's 4200. Check it from another terminal:
+Open `http://localhost:5017`. Use that port, not the Angular dev server's 4200. In open mode anyone can upload, but the gallery itself (viewing and deleting) needs a login, and with the example file as-is nobody can log in yet. To see photos, add owner credentials (next section). Check the API from another terminal:
 
 ```bash
 curl http://localhost:5017/config
@@ -84,6 +84,8 @@ Then set the mode and owner in `api/appsettings.Local.json` (keep the `Cosmos` a
 
 Run `dotnet run` again and sign in with that username and password. If either value is missing in owner mode, the API refuses to start and says so.
 
+The same `Owner` section also works in open mode: keep `"Mode": "open"` and add `Owner`, and anonymous visitors can still upload while the owner logs in to view and delete.
+
 ### Troubleshooting
 
 - **`address already in use` on port 5017**: another API instance is still running. Find it with `lsof -nP -iTCP:5017 -sTCP:LISTEN` and stop it (`kill <PID>`), then `dotnet run` again.
@@ -105,14 +107,14 @@ Emulator tools:
 | `BlobStorage:ConnectionString`     | Azurite at `http://localhost:10000`, using the emulator's public well-known account key |
 | `BlobStorage:PhotosContainer`      | Blob container, created on startup if missing                                           |
 | `Auth:Mode`                        | `owner`, `open`, or `accounts` (see below)                                              |
-| `Owner:Username`, `Owner:PasswordHash` | Required only in `owner` mode. Hash from `dotnet run --no-launch-profile -- hash <password>` |
+| `Owner:Username`, `Owner:PasswordHash` | Required in `owner` mode. Optional in `open` mode, where it is the only login (to view and delete). Hash from `dotnet run --no-launch-profile -- hash <password>` |
 
 The keys in the example are the published emulator defaults, not secrets. Never put real Azure keys or a real password hash in a tracked file.
 
 | Mode                                           | Behavior                                                                            |
 | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `owner` (default if `Auth:Mode` is unset)      | One account from config. Only the owner can upload and delete.                      |
-| `open` (the example file)                      | No login to upload. Type and size limits apply. Anyone can delete their own photos. |
+| `open` (the example file)                      | No login to upload. Type and size limits apply. Viewing and deleting need a login, and the only login is the owner (if `Owner` is set). |
 | `accounts`                                     | Signup and login routes. Users are stored in Cosmos.                                |
 
 ## Why local-only, no CI, no tests
