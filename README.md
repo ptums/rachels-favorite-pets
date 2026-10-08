@@ -82,13 +82,13 @@ Then set the mode and owner in `api/appsettings.Local.json` (keep the `Cosmos` a
 }
 ```
 
-Run `dotnet run` again and sign in with that username and password. If either value is missing in owner mode, the API refuses to start and says so.
+Stop the running API (Ctrl+C in its terminal), run `dotnet run` again, and sign in with that username and password. If either value is missing in owner mode, the API refuses to start and says so.
 
 The same `Owner` section also works in open mode: keep `"Mode": "open"` and add `Owner`, and anonymous visitors can still upload while the owner logs in to view and delete.
 
 ### Troubleshooting
 
-- **`address already in use` on port 5017**: another API instance is still running. Find it with `lsof -nP -iTCP:5017 -sTCP:LISTEN` and stop it (`kill <PID>`), then `dotnet run` again.
+- **`address already in use` on port 5017**: another API instance is still running (it shows up as `Api`). Find it with `lsof -nP -iTCP:5017 -sTCP:LISTEN` and stop it (`kill <PID>`), then `dotnet run` again.
 
 Emulator tools:
 
@@ -158,12 +158,27 @@ Oct 8 2026, macOS, following only the "Run it" steps above (open mode) from a ne
 
 | Measure                                                  | Value                                                       |
 | -------------------------------------------------------- | ----------------------------------------------------------- |
-| `git clone` to `curl http://localhost:5017/config` → JSON | 16 s                                                        |
+| `git clone` to `curl http://localhost:5017/config` → JSON | 17 s (16 s on the first run)                                |
 | Of which `dotnet run` to first response                  | 3 s                                                         |
 | Commands                                                 | 13 lines (9 excluding `cd`), including the `curl` check     |
-| Steps that failed or needed a guess                      | None, first try                                             |
+| Steps that failed or needed a guess                      | None for the zero-config path, first try on both runs. Second run found one gap in the owner path (below), now fixed. |
 
-Also checked after startup: `GET /` returns the Angular app, and an open-mode `POST /photos` upload returns 200. Caveat: Docker images, npm cache, and NuGet packages were already on the machine, so a truly cold machine will spend extra time pulling the Cosmos emulator image and downloading packages.
+Measured twice, the second time after correcting the open-mode docs. Also checked after startup, in the same clone, following the README:
+
+| Check                                                              | Result                |
+| ------------------------------------------------------------------ | --------------------- |
+| `GET /` serves the Angular app                                      | 200                   |
+| Open mode, anonymous `POST /photos`                                 | 200                   |
+| Open mode, anonymous `GET /photos`                                  | 401                   |
+| `dotnet run --no-launch-profile -- hash` output pasted into `Owner` | accepted              |
+| Open mode + `Owner`: login, list, image, delete                     | 200, listed, 200, 204 |
+| Owner mode: anonymous upload / owner login / owner upload           | 401 / 200 / 200       |
+| Owner mode with `Owner` removed                                     | refuses to start, names the fix |
+| Second `dotnet run` while one is running                            | `address already in use` (troubleshooting line) |
+
+Gap found on the second run: "run `dotnet run` again" in the owner steps didn't say to stop the running API first, which led straight to the port-5017 error. The step now says to stop it.
+
+Caveat: Docker images, npm cache, and NuGet packages were already on the machine, so a truly cold machine will spend extra time pulling the Cosmos emulator image and downloading packages.
 
 ### Delete route verification
 
