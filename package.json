@@ -11,7 +11,7 @@
   "dependencies": {
     "angular-bootstrap-lightbox": "^0.10.0",
     "fs": "0.0.2",
-    "multer": "^1.1.0"
+    "multer": "^2.4.0"
   },
   "repository": {
   "type": "git",
