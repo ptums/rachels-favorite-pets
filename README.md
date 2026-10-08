@@ -18,56 +18,102 @@ The built Angular app is served by the API itself (`wwwroot`), so everything is 
 
 ## Prerequisites
 
-- .NET SDK
-- Node.js and the Angular CLI
-- Docker (for the emulators)
+Tested with these versions:
+
+- .NET SDK 10 (10.0.401)
+- Node.js 22.22+ or 24.15+ (Angular 22 requirement) and npm. No global Angular CLI needed.
+- Docker with Compose v2 (`docker compose`, not `docker-compose`)
+
+Ports used: `5017` (API + site), `8081` and `1234` (Cosmos emulator), `10000` (Azurite).
 
 ## Run it
 
+From a fresh clone, zero-config (open mode):
+
 ```bash
-# 1. Start the emulators (Cosmos DB + Azurite)
+git clone https://github.com/ptums/rachels-favorite-pets.git
+cd rachels-favorite-pets
+
+# 1. Start the emulators (Cosmos DB + Azurite), from the repo root
 docker compose up -d
 
-# 2. Build the client and copy it into the API
+# 2. Build the client and copy it into the API (only client/ needs npm)
 cd client
-npm install
-ng build
+npm ci
+npm run build
 rm -rf ../api/wwwroot && mkdir -p ../api/wwwroot
 cp -R dist/client/browser/* ../api/wwwroot/
 cd ..
 
-# 3. Configure local settings
-#    Create api/appsettings.Local.json (see "Configuration" below)
+# 3. Local settings: the example works as-is (open mode, emulator connection strings)
+cp api/appsettings.example.json api/appsettings.Local.json
 
 # 4. Run the API
 cd api
 dotnet run
 ```
 
-Open the URL the API prints (`http://localhost:5017`). Use that port, not the Angular dev server's 4200.
+Open `http://localhost:5017`. Use that port, not the Angular dev server's 4200. Check it from another terminal:
+
+```bash
+curl http://localhost:5017/config
+# {"mode":"open"}
+```
+
+### Owner mode (second path)
+
+Owner mode has one login, configured in `api/appsettings.Local.json`. The API stores only a password hash. Generate one from `api/` (`--no-launch-profile` keeps the output to just the hash):
+
+```bash
+cd api
+dotnet run --no-launch-profile -- hash 'your-password'
+# AQAAAAIAAYagAAAAE...
+```
+
+Then set the mode and owner in `api/appsettings.Local.json` (keep the `Cosmos` and `BlobStorage` sections from the example):
+
+```json
+{
+  "Auth": { "Mode": "owner" },
+  "Owner": {
+    "Username": "rachel",
+    "PasswordHash": "AQAAAAIAAYagAAAAE..."
+  }
+}
+```
+
+Run `dotnet run` again and sign in with that username and password. If either value is missing in owner mode, the API refuses to start and says so.
+
+### Troubleshooting
+
+- **`address already in use` on port 5017**: another API instance is still running. Find it with `lsof -nP -iTCP:5017 -sTCP:LISTEN` and stop it (`kill <PID>`), then `dotnet run` again.
 
 Emulator tools:
 
 - Cosmos Data Explorer: `http://localhost:1234`
 - Cosmos endpoint: `8081`, Azurite blob service: `10000`
+- Stop them with `docker compose down` from the repo root.
 
 ## Configuration
 
-Auth mode is set in `api/appsettings.Local.json`:
+`api/appsettings.Local.json` is git-ignored and loaded after `appsettings.json`, so it overrides it. Start from `api/appsettings.example.json`:
 
-```json
-{
-  "Auth": {
-    "Mode": "owner"
-  }
-}
-```
+| Key                                | Meaning                                                                                 |
+| ---------------------------------- | --------------------------------------------------------------------------------------- |
+| `Cosmos:Endpoint`, `Cosmos:Key`    | Cosmos emulator at `http://localhost:8081`, using the emulator's public well-known key |
+| `Cosmos:DatabaseName`              | Created on startup if missing                                                           |
+| `BlobStorage:ConnectionString`     | Azurite at `http://localhost:10000`, using the emulator's public well-known account key |
+| `BlobStorage:PhotosContainer`      | Blob container, created on startup if missing                                           |
+| `Auth:Mode`                        | `owner`, `open`, or `accounts` (see below)                                              |
+| `Owner:Username`, `Owner:PasswordHash` | Required only in `owner` mode. Hash from `dotnet run --no-launch-profile -- hash <password>` |
 
-| Mode              | Behavior                                                                            |
-| ----------------- | ----------------------------------------------------------------------------------- |
-| `owner` (default) | One account from config. Only the owner can upload and delete.                      |
-| `open`            | No login to upload. Type and size limits apply. Anyone can delete their own photos. |
-| `accounts`        | Signup and login routes. Users are stored in Cosmos.                                |
+The keys in the example are the published emulator defaults, not secrets. Never put real Azure keys or a real password hash in a tracked file.
+
+| Mode                                           | Behavior                                                                            |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `owner` (default if `Auth:Mode` is unset)      | One account from config. Only the owner can upload and delete.                      |
+| `open` (the example file)                      | No login to upload. Type and size limits apply. Anyone can delete their own photos. |
+| `accounts`                                     | Signup and login routes. Users are stored in Cosmos.                                |
 
 ## Why local-only, no CI, no tests
 

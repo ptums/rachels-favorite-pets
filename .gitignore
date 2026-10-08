@@ -8,13 +8,17 @@ obj/
 !.env.example
 **/appsettings.Local.json
 node_modules/*
-cookies.txt
 # Local Lighthouse reports (not committed)
 docs/measurements/lighthouse-*
 api/wwwroot/
-cookies.txtapi/wwwroot/
+
 
 node_modules/
 .angular/
 dist/
 api/wwwroot/
+
+# Local scratch output (never commit)
+**/cookies.txt
+run-output.txt
+install-output.txt

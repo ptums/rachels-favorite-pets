@@ -9,14 +9,25 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 
+// `dotnet run -- hash <password>` prints an Owner:PasswordHash value and exits.
+// Same hasher /login uses to verify it.
+if (args is ["hash", var plainPassword])
+{
+    Console.WriteLine(new PasswordHasher<string>().HashPassword("owner", plainPassword));
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 var auth = builder.Configuration.GetSection(AuthOptions.SectionName).Get<AuthOptions>() ?? new AuthOptions();
 if (auth.Mode is not ("owner" or "open" or "accounts"))
     throw new InvalidOperationException($"Auth:Mode must be owner, open, or accounts (got '{auth.Mode}').");
-if (auth.Mode != "accounts" && string.IsNullOrEmpty(builder.Configuration["Owner:PasswordHash"]))
-    throw new InvalidOperationException("Owner:PasswordHash is not set. Create api/appsettings.Local.json.");
+if (auth.Mode == "owner" &&
+    (string.IsNullOrEmpty(builder.Configuration["Owner:Username"]) || string.IsNullOrEmpty(builder.Configuration["Owner:PasswordHash"])))
+    throw new InvalidOperationException(
+        "Auth:Mode is \"owner\" but Owner:Username or Owner:PasswordHash is not set in api/appsettings.Local.json. " +
+        "Generate a hash with: dotnet run --no-launch-profile -- hash <password>");
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
