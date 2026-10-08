@@ -14,3 +14,7 @@ docs/measurements/lighthouse-*
 api/wwwroot/
 cookies.txtapi/wwwroot/
 
+node_modules/
+.angular/
+dist/
+api/wwwroot/
