@@ -150,6 +150,19 @@ My first measurement was invalid: it ran against the Angular dev server, which s
 
 `dotnet list api package --vulnerable` on Oct 8 2026: no vulnerable packages found against the configured NuGet sources. This is a point-in-time check against NuGet's advisory data, not a guarantee.
 
+### Fresh-clone setup
+
+Oct 8 2026, macOS, following only the "Run it" steps above (open mode) from a new clone of `master` into `/tmp/fresh-test`, with brand-new emulator containers:
+
+| Measure                                                  | Value                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------- |
+| `git clone` to `curl http://localhost:5017/config` → JSON | 16 s                                                        |
+| Of which `dotnet run` to first response                  | 3 s                                                         |
+| Commands                                                 | 13 lines (9 excluding `cd`), including the `curl` check     |
+| Steps that failed or needed a guess                      | None, first try                                             |
+
+Also checked after startup: `GET /` returns the Angular app, and an open-mode `POST /photos` upload returns 200. Caveat: Docker images, npm cache, and NuGet packages were already on the machine, so a truly cold machine will spend extra time pulling the Cosmos emulator image and downloading packages.
+
 ### Delete route verification
 
 Oct 8 2026, `Auth:Mode=owner`:
@@ -170,12 +183,9 @@ Not done, on purpose. This is where I stopped.
 **Documentation and verification**
 
 - Add the legacy baseline (tag `legacy-baseline`) and a before/after comparison.
-- Pin and document .NET SDK and Node.js versions.
-- Document the owner credentials and the Cosmos/Blob connection settings in `appsettings.Local.json`.
-- Confirm the compose file location and the client `dist` path in the run steps.
+- Pin the .NET SDK (`global.json` `sdk` section) and Node.js (`.nvmrc` / `engines`). Versions are documented under Prerequisites but not enforced.
 - Record the exact status codes for delete checks 3, 5, and 6.
 - Re-run the vulnerability check with `--include-transitive`.
-- Measure fresh-clone setup: steps and time from `git clone` to a working gallery.
 - Re-run Lighthouse 3x in Incognito (logged-out view) and record the median.
 
 **Performance and accessibility**
