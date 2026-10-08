@@ -1,0 +1,72 @@
+/* A CSS stand-in for the original Adobe Edge banner: a photo collage panning behind the title. */
+.banner {
+  position: relative;
+  display: block;
+  height: clamp(10rem, 30vw, 20rem);
+  overflow: hidden;
+  background: #000;
+  border-radius: 0 0 10px 10px;
+  text-decoration: none;
+}
+
+.banner-track {
+  opacity: 0.85;
+  animation: pan 60s linear infinite;
+}
+
+.banner-collage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (min-width: 576px) {
+  .banner-collage {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.banner-collage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.banner-title {
+  position: absolute;
+  left: clamp(1rem, 4vw, 2.5rem);
+  right: 1rem;
+  bottom: clamp(0.75rem, 3vw, 2rem);
+  margin: 0;
+  font-family: Handlee, Tahoma, sans-serif;
+  font-size: clamp(1.25rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fcf9f9;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 85%);
+}
+
+.banner:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -6px;
+}
+
+@keyframes pan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-track {
+    animation: none;
+  }
+}
+
+main:focus {
+  outline: none;
+}

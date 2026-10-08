@@ -1,0 +1,59 @@
+/* The original app's look, on Bootstrap 5: peach-to-rose gradient, Tahoma, a gray jumbotron. */
+:root {
+  color-scheme: light;
+  --bs-body-font-family: Tahoma, Verdana, 'Segoe UI', sans-serif;
+  --pets-peach: #f2cab3;
+  --pets-rose: #d98b8b;
+  --bs-link-color-rgb: 138, 42, 42;
+  --bs-link-hover-color-rgb: 100, 24, 24;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(90deg, var(--pets-peach) 0, var(--pets-rose) 100%) fixed;
+}
+
+.btn-primary {
+  --bs-btn-bg: #9e3b3b;
+  --bs-btn-border-color: #9e3b3b;
+  --bs-btn-hover-bg: #7f2c2c;
+  --bs-btn-hover-border-color: #7f2c2c;
+  --bs-btn-active-bg: #6c2424;
+  --bs-btn-active-border-color: #6c2424;
+  --bs-btn-disabled-bg: #9e3b3b;
+  --bs-btn-disabled-border-color: #9e3b3b;
+}
+
+.form-control:focus {
+  border-color: var(--pets-rose);
+  box-shadow: 0 0 0 0.25rem rgb(158 59 59 / 25%);
+}
+
+/* Bootstrap 3's .jumbotron, which Bootstrap 5 dropped. */
+.jumbotron {
+  background-color: #eee;
+  border-radius: 0.5rem;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .jumbotron {
+    padding: 3rem 3.75rem;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 1080;
+}
+
+.auth-card {
+  max-width: 26rem;
+  margin: 1rem auto;
+}

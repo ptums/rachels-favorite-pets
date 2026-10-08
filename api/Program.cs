@@ -52,7 +52,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
+builder.Services.AddResponseCompression();
+
 var app = builder.Build();
+
+app.UseResponseCompression();   // first, so static files get compressed
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -184,48 +190,18 @@ var uploadRoute = app.MapPost("/photos", async (IFormFile file, HttpContext http
 
 if (auth.Mode != "open") uploadRoute.RequireAuthorization();
 
-app.MapPost("/photos", async (IFormFile file, AppDbContext db, BlobServiceClient blobService) =>
-{
-    // 1. Size check
-    if (file.Length == 0 || file.Length > 5 * 1024 * 1024)
-    {
-        return Results.BadRequest("File must be between 1 byte and 5 MB.");
-    }
 
-    // 2. Type check: read the file's first bytes, don't trust the header
-    await using var stream = file.OpenReadStream();
-    var header = new byte[4];
-    var read = await stream.ReadAsync(header);
+app.MapGet("/photos", async (AppDbContext db, HttpContext http) =>
+  {
+      var username = http.User.Identity?.Name;
+      if (username is null) return Results.Unauthorized();
 
-    var isJpeg = read >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF;
-    var isPng = read >= 4 && header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47;
+      var query = http.User.IsInRole("owner")
+          ? db.Photos
+          : db.Photos.Where(p => p.UploadedBy == username);
 
-    if (!isJpeg && !isPng)
-    {
-        return Results.BadRequest("Only JPEG and PNG images are allowed.");
-    }
-
-    stream.Position = 0; // rewind so the upload starts at byte one
-
-    // 3. Build the record, with the type we detected
-    var photo = new Photo
-    {
-        FileName = file.FileName,
-        ContentType = isJpeg ? "image/jpeg" : "image/png"
-    };
-
-    // 4. Upload the blob first, then save the record
-    var container = blobService.GetBlobContainerClient(blob.PhotosContainer);
-    var blobClient = container.GetBlobClient(photo.Id);
-    await blobClient.UploadAsync(stream, overwrite: true);
-
-    db.Photos.Add(photo);
-    await db.SaveChangesAsync();
-
-    return Results.Ok(photo.Id);
-}).DisableAntiforgery().RequireAuthorization();
-
-
+      return Results.Ok(await query.OrderByDescending(p => p.UploadedAt).ToListAsync());
+  }).RequireAuthorization();
 
 app.MapGet("/photos/{id}/image", async (string id, AppDbContext db, BlobServiceClient blobService) => 
 { 
@@ -265,6 +241,7 @@ app.MapDelete("/photos/{id}", async (string id, AppDbContext db, BlobServiceClie
     return Results.NoContent();
 }).RequireAuthorization();
 
+app.MapFallbackToFile("index.html"); 
 
 app.Run();
 record LoginRequest(string Username, string Password);

@@ -8,4 +8,9 @@ obj/
 !.env.example
 **/appsettings.Local.json
 node_modules/*
+cookies.txt
+# Local Lighthouse reports (not committed)
+docs/measurements/lighthouse-*
+api/wwwroot/
 cookies.txtapi/wwwroot/
+
