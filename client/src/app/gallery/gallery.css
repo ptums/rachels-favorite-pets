@@ -1,61 +1,68 @@
+.search {
+  width: min(100%, 300px);
+}
+
 .upload {
-  margin-bottom: 2rem;
-  max-width: 32rem;
+  max-width: 36rem;
 }
 
-.upload h2,
-.empty h2 {
-  margin-top: 0;
-  font-size: 1.125rem;
+/* The original masonry gallery: CSS columns with no gaps. */
+#photos {
+  column-count: 2;
+  column-gap: 0;
+  line-height: 0;
 }
 
-.empty {
-  text-align: center;
-  padding: 3rem 1.5rem;
+@media (min-width: 576px) {
+  #photos {
+    column-count: 3;
+  }
 }
 
-.grid {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-  gap: 1rem;
+@media (min-width: 992px) {
+  #photos {
+    column-count: 5;
+  }
 }
 
-.tile {
-  display: flex;
-  flex-direction: column;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
+.photo {
+  position: relative;
+  break-inside: avoid;
 }
 
-.tile img {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  background: var(--border);
+.photo img {
+  position: relative;
+  right: 0;
+  bottom: 0;
+  transition:
+    right 0.2s ease-in-out,
+    bottom 0.2s ease-in-out,
+    padding 0.2s ease-in-out,
+    margin 0.2s ease-in-out,
+    border-radius 0.2s ease-in-out;
 }
 
-.meta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.75rem;
-  flex: 1;
+/* The original hover lift, also on keyboard focus of the delete button. */
+.photo:hover img,
+.photo:focus-within img {
+  right: 7px;
+  bottom: 4px;
+  padding: 3px;
+  margin: 2px;
+  border-radius: 7px;
 }
 
-.meta .name {
-  margin: 0;
-  font-weight: 600;
-  overflow-wrap: anywhere;
+@media (prefers-reduced-motion: reduce) {
+  .photo img {
+    transition: none;
+  }
 }
 
-.meta button {
-  align-self: flex-start;
-  margin-top: auto;
+/* The original white pill delete link, overlapping the bottom of the photo. */
+.deletion-link {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  line-height: 1.2;
+  z-index: 1;
 }

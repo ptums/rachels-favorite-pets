@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, computed, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { Api, Photo } from '../api';
@@ -31,6 +31,13 @@ export class Gallery implements OnInit {
   protected readonly loading = signal(true);
   protected readonly loadError = signal<string | null>(null);
 
+  /** The original app's "Search for Animal" box: filters by file name. */
+  protected readonly query = signal('');
+  protected readonly visiblePhotos = computed(() => {
+    const query = this.query().trim().toLowerCase();
+    return query ? this.photos().filter((p) => p.fileName.toLowerCase().includes(query)) : this.photos();
+  });
+
   protected readonly selectedFile = signal<File | null>(null);
   protected readonly uploading = signal(false);
   protected readonly deletingId = signal<string | null>(null);
@@ -55,6 +62,10 @@ export class Gallery implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  protected onSearch(event: Event): void {
+    this.query.set((event.target as HTMLInputElement).value);
   }
 
   protected onFileChosen(event: Event): void {

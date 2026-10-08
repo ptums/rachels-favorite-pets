@@ -1,80 +1,109 @@
-<h1>The gallery</h1>
-
-<div aria-live="polite">
-  @if (error(); as message) {
-    <p class="banner error" role="alert">{{ message }}</p>
-  }
-  @if (notice(); as message) {
-    <p class="banner success">{{ message }}</p>
-  }
-</div>
-
-@if (session.canUpload()) {
-  <form class="card upload" (submit)="upload($event)" aria-labelledby="upload-heading">
-    <h2 id="upload-heading">Add a photo</h2>
-    <div class="field">
-      <label for="photo-file">Photo file</label>
-      <input
-        #fileInput
-        id="photo-file"
-        name="file"
-        type="file"
-        accept="image/jpeg,image/png"
-        aria-describedby="photo-file-hint"
-        (change)="onFileChosen($event)"
-      />
-      <p id="photo-file-hint" class="hint">JPEG or PNG, up to 5 MB.</p>
-    </div>
-    <button type="submit" [disabled]="uploading()">
-      {{ uploading() ? 'Uploading…' : 'Upload' }}
-    </button>
-  </form>
-}
-
-@if (!session.canViewPhotos()) {
-  <div class="empty card">
-    <h2>Log in to see photos</h2>
-    <p>
-      <a routerLink="/login">Log in</a>
-      @if (session.canSignup()) {
-        or <a routerLink="/signup">sign up</a>
-      }
-      to see the photos.
-    </p>
-  </div>
-} @else if (loading()) {
-  <p role="status">Loading photos…</p>
-} @else if (loadError(); as message) {
-  <div class="banner error" role="alert">
-    <p>{{ message }}</p>
-    <button type="button" class="secondary" (click)="load()">Try again</button>
-  </div>
-} @else if (photos().length === 0) {
-  <div class="empty card">
-    <h2>No photos yet</h2>
-    @if (session.canUpload()) {
-      <p>Use the form above to add the first one.</p>
-    } @else {
-      <p>Check back soon.</p>
+<div class="jumbotron">
+  <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+    <h1 class="h2 mb-0">The gallery</h1>
+    @if (session.canViewPhotos() && photos().length > 0) {
+      <div class="search">
+        <label for="photo-search" class="visually-hidden">Search for animal</label>
+        <input
+          id="photo-search"
+          type="search"
+          class="form-control"
+          placeholder="Search for Animal"
+          [value]="query()"
+          (input)="onSearch($event)"
+        />
+      </div>
     }
   </div>
-} @else {
-  <ul class="grid" aria-label="Photos">
-    @for (photo of photos(); track photo.id) {
-      <li class="tile">
-        <img [src]="api.imageUrl(photo.id)" [alt]="photo.fileName" loading="lazy" width="400" height="300" />
-        <div class="meta">
-          <p class="name">{{ photo.fileName }}</p>
-          <p class="hint">
-            <time [attr.datetime]="photo.uploadedAt">{{ photo.uploadedAt | date: 'mediumDate' }}</time>
-            @if (photo.uploadedBy) {
-              · {{ photo.uploadedBy }}
-            }
-          </p>
+
+  <div aria-live="polite">
+    @if (error(); as message) {
+      <div class="alert alert-danger" role="alert">{{ message }}</div>
+    }
+    @if (notice(); as message) {
+      <div class="alert alert-success">{{ message }}</div>
+    }
+  </div>
+
+  @if (session.canUpload()) {
+    <form
+      class="upload card card-body mb-4"
+      (submit)="upload($event)"
+      aria-labelledby="upload-heading"
+    >
+      <h2 id="upload-heading" class="h5">Add a photo</h2>
+      <label for="photo-file" class="form-label">Photo file</label>
+      <div class="d-flex flex-wrap gap-2">
+        <input
+          #fileInput
+          id="photo-file"
+          name="file"
+          type="file"
+          class="form-control flex-grow-1 w-auto"
+          accept="image/jpeg,image/png"
+          aria-describedby="photo-file-hint"
+          (change)="onFileChosen($event)"
+        />
+        <button type="submit" class="btn btn-primary" [disabled]="uploading()">
+          {{ uploading() ? 'Uploading…' : 'Upload' }}
+        </button>
+      </div>
+      <div id="photo-file-hint" class="form-text">JPEG or PNG, up to 5 MB.</div>
+    </form>
+  }
+
+  @if (!session.canViewPhotos()) {
+    <div class="text-center py-4">
+      <h2 class="h4">Log in to see photos</h2>
+      <p class="mb-0">
+        <a routerLink="/login">Log in</a>
+        @if (session.canSignup()) {
+          or <a routerLink="/signup">sign up</a>
+        }
+        to see the photos.
+      </p>
+    </div>
+  } @else if (loading()) {
+    <p role="status" class="text-center py-4 mb-0">
+      <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Loading photos…
+    </p>
+  } @else if (loadError(); as message) {
+    <div class="alert alert-danger" role="alert">
+      <p>{{ message }}</p>
+      <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">
+        Try again
+      </button>
+    </div>
+  } @else if (photos().length === 0) {
+    <div class="text-center py-4">
+      <h2 class="h4">No photos yet</h2>
+      <p class="mb-0">
+        @if (session.canUpload()) {
+          Use the form above to add the first one.
+        } @else {
+          Check back soon.
+        }
+      </p>
+    </div>
+  } @else if (visiblePhotos().length === 0) {
+    <p class="text-center py-4 mb-0" role="status">No photos match "{{ query() }}".</p>
+  } @else {
+    <ul id="photos" class="list-unstyled mb-0" aria-label="Photos">
+      @for (photo of visiblePhotos(); track photo.id) {
+        <li class="photo">
+          <img
+            class="img-thumbnail"
+            [src]="api.imageUrl(photo.id)"
+            [alt]="photo.fileName"
+            [title]="photo.fileName + ' · ' + (photo.uploadedAt | date: 'mediumDate')"
+            loading="lazy"
+            width="200"
+            height="200"
+          />
           @if (session.canDelete(photo)) {
             <button
               type="button"
-              class="danger"
+              class="deletion-link btn btn-light btn-sm rounded-pill"
               [disabled]="deletingId() === photo.id"
               [attr.aria-label]="'Delete ' + photo.fileName"
               (click)="remove(photo)"
@@ -82,8 +111,8 @@
               {{ deletingId() === photo.id ? 'Deleting…' : 'Delete' }}
             </button>
           }
-        </div>
-      </li>
-    }
-  </ul>
-}
+        </li>
+      }
+    </ul>
+  }
+</div>

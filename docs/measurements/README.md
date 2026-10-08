@@ -1,6 +1,6 @@
 # TWS-50 measurements (checkpoints 6 and 7)
 
-Recorded 2026-10-06 on the `tws-50-angular-frontend` branch, after front-end QA. API in accounts mode,
+Recorded 2026-10-07 on the `tws-50-angular-frontend` branch, after front-end QA. API in accounts mode,
 not logged in.
 
 ## Checkpoint 6: front end
@@ -10,9 +10,14 @@ Lighthouse 13.5.0, default mobile emulation (412 px wide), Chrome headless.
 
 | Page    | Performance | Accessibility | Best practices | Page weight | LCP   | Requests |
 | ------- | ----------- | ------------- | -------------- | ----------- | ----- | -------- |
-| Gallery | 100         | 100           | 96             | 95.0 KiB    | 1.7 s | 7        |
-| Log in  | 98          | 100           | 96             | 103.1 KiB   | 2.2 s | 8        |
-| Sign up | 98          | 100           | 96             | 103.2 KiB   | 2.2 s | 8        |
+| Gallery | 95          | 100           | 96             | 404.1 KiB   | 2.8 s | 21       |
+| Log in  | 88          | 100           | 96             | 411.9 KiB   | 3.7 s | 22       |
+| Sign up | 88          | 100           | 96             | 412.0 KiB   | 3.7 s | 22       |
+
+- Measured after restyling with Bootstrap 5.3.8 to match the original app (gradient, Tahoma, jumbotron,
+  masonry gallery, photo banner). Before the restyle the same pages were 95–103 KiB with performance 98–100.
+  The added weight is mostly the 13 banner photos (296 KiB) and Bootstrap's full stylesheet
+  (232 KB raw, 23 KB compressed), which also delays first paint.
 
 - Best practices loses points only for `errors-in-console`: the browser logs the expected 401 from `/me`
   when no one is logged in.
@@ -47,6 +52,7 @@ Lighthouse 13.5.0, default mobile emulation (412 px wide), Chrome headless.
    duplicate upload route) as soon as it ran against the real server.
 3. Login: the UI only hides controls; the API is the real check. What the client may show has to follow
    what the API serves, so when images required login, the logged-out gallery became a login prompt.
-6. `ng serve --configuration production` reports about 1.8 MB and performance 56 because of dev-server
+6. Bringing back the original look costs about 300 KiB, almost all banner photos; resizing them or using
+   WebP is the obvious next saving. `ng serve --configuration production` reports about 1.8 MB and performance 56 because of dev-server
    scripts; measure the built `dist/` instead.
 7. The client has 0 audit findings; the 3 high are all in the legacy Node app that is still at the repo root.

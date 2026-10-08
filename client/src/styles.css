@@ -1,175 +1,59 @@
+/* The original app's look, on Bootstrap 5: peach-to-rose gradient, Tahoma, a gray jumbotron. */
 :root {
-  color-scheme: light dark;
-  --bg: #f7f5f2;
-  --surface: #ffffff;
-  --text: #1f1c19;
-  --muted: #5c554e;
-  --border: #d9d3cc;
-  --accent: #1d5fa8;
-  --accent-text: #ffffff;
-  --danger: #a3261b;
-  --danger-bg: #fdecea;
-  --success: #1e6b34;
-  --success-bg: #e8f5ec;
-  --focus: #1d5fa8;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #171513;
-    --surface: #221f1c;
-    --text: #f2eee9;
-    --muted: #b4aca3;
-    --border: #3d3833;
-    --accent: #8ab8ee;
-    --accent-text: #10161d;
-    --danger: #ffb4a9;
-    --danger-bg: #3b1d19;
-    --success: #9fd8ae;
-    --success-bg: #1a3322;
-    --focus: #8ab8ee;
-  }
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  color-scheme: light;
+  --bs-body-font-family: Tahoma, Verdana, 'Segoe UI', sans-serif;
+  --pets-peach: #f2cab3;
+  --pets-rose: #d98b8b;
+  --bs-link-color-rgb: 138, 42, 42;
+  --bs-link-hover-color-rgb: 100, 24, 24;
 }
 
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  min-height: 100vh;
+  background: linear-gradient(90deg, var(--pets-peach) 0, var(--pets-rose) 100%) fixed;
 }
 
-a {
-  color: var(--accent);
+.btn-primary {
+  --bs-btn-bg: #9e3b3b;
+  --bs-btn-border-color: #9e3b3b;
+  --bs-btn-hover-bg: #7f2c2c;
+  --bs-btn-hover-border-color: #7f2c2c;
+  --bs-btn-active-bg: #6c2424;
+  --bs-btn-active-border-color: #6c2424;
+  --bs-btn-disabled-bg: #9e3b3b;
+  --bs-btn-disabled-border-color: #9e3b3b;
 }
 
-:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 2px;
+.form-control:focus {
+  border-color: var(--pets-rose);
+  box-shadow: 0 0 0 0.25rem rgb(158 59 59 / 25%);
 }
 
-h1 {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  margin: 0 0 1rem;
+/* Bootstrap 3's .jumbotron, which Bootstrap 5 dropped. */
+.jumbotron {
+  background-color: #eee;
+  border-radius: 0.5rem;
+  padding: 2rem 1rem;
 }
 
-button,
-input {
-  font: inherit;
+@media (min-width: 768px) {
+  .jumbotron {
+    padding: 3rem 3.75rem;
+  }
 }
 
-button {
-  cursor: pointer;
-  border-radius: 6px;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--accent-text);
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-button.secondary {
-  background: transparent;
-  color: var(--accent);
-}
-
-button.danger {
-  background: transparent;
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-.link-button {
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--accent);
-  text-decoration: underline;
-}
-
-.banner {
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  margin: 0 0 1rem;
-}
-
-.banner.error {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid var(--danger);
-}
-
-.banner.success {
-  background: var(--success-bg);
-  color: var(--success);
-  border: 1px solid var(--success);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 1rem;
-}
-
-.field input {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--surface);
-  color: var(--text);
-}
-
-.hint {
-  color: var(--muted);
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.field-error {
-  color: var(--danger);
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1.5rem;
-}
-
-.visually-hidden {
+.skip-link {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 1080;
 }
 
 .auth-card {
-  max-width: 24rem;
+  max-width: 26rem;
   margin: 1rem auto;
-}
-
-.auth-card button[type='submit'] {
-  width: 100%;
-}
-
-.switch {
-  margin-top: 1rem;
 }

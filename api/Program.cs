@@ -52,7 +52,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
+builder.Services.AddResponseCompression();
+
 var app = builder.Build();
+
+app.UseResponseCompression();   // first, so static files get compressed
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -235,6 +241,7 @@ app.MapDelete("/photos/{id}", async (string id, AppDbContext db, BlobServiceClie
     return Results.NoContent();
 }).RequireAuthorization();
 
+app.MapFallbackToFile("index.html"); 
 
 app.Run();
 record LoginRequest(string Username, string Password);

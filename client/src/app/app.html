@@ -1,30 +1,51 @@
-<a class="skip-link" href="#main">Skip to content</a>
+<a class="skip-link btn btn-light" href="#main">Skip to content</a>
 
-<header class="site-header">
-  <a class="brand" routerLink="/">Rachel's Favorite Pets</a>
+<div class="container pb-5">
+  <header>
+    <a class="banner" routerLink="/" aria-label="Rachel's Favorite Pets, home">
+      <div class="banner-track" aria-hidden="true">
+        <!-- The collage twice, so the upward pan loops without a seam. -->
+        @for (copy of [0, 1]; track copy) {
+          <div class="banner-collage">
+            @for (image of bannerImages; track $index) {
+              <img [src]="'banner/' + image" alt="" width="300" height="225" decoding="async" />
+            }
+          </div>
+        }
+      </div>
+      <p class="banner-title">Endless Photos of Rachel's Favorite Animals</p>
+    </a>
 
-  <nav aria-label="Account">
-    @if (session.user(); as user) {
-      <span class="who">Logged in as <strong>{{ user.username }}</strong></span>
-      <button type="button" class="link-button" (click)="logout()">Log out</button>
-    } @else {
-      <a routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Log in</a>
-      @if (session.canSignup()) {
-        <a routerLink="/signup" routerLinkActive="active" ariaCurrentWhenActive="page">Sign up</a>
+    <nav
+      class="d-flex flex-wrap align-items-center justify-content-end gap-3 py-3"
+      aria-label="Account"
+    >
+      @if (session.user(); as user) {
+        <span
+          >Logged in as <strong>{{ user.username }}</strong></span
+        >
+        <button type="button" class="btn btn-link p-0" (click)="logout()">Log out</button>
+      } @else {
+        <a routerLink="/login" routerLinkActive="fw-bold" ariaCurrentWhenActive="page">Log in</a>
+        @if (session.canSignup()) {
+          <a routerLink="/signup" routerLinkActive="fw-bold" ariaCurrentWhenActive="page"
+            >Sign up</a
+          >
+        }
       }
-    }
-  </nav>
-</header>
+    </nav>
+  </header>
 
-@if (session.configError()) {
-  <p class="banner error" role="alert">
-    Could not reach the server. Check that the API is running, then reload the page.
-  </p>
-}
-@if (logoutError(); as message) {
-  <p class="banner error" role="alert">{{ message }}</p>
-}
+  @if (session.configError()) {
+    <div class="alert alert-danger" role="alert">
+      Could not reach the server. Check that the API is running, then reload the page.
+    </div>
+  }
+  @if (logoutError(); as message) {
+    <div class="alert alert-danger" role="alert">{{ message }}</div>
+  }
 
-<main id="main" tabindex="-1">
-  <router-outlet />
-</main>
+  <main id="main" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>

@@ -11,3 +11,4 @@ node_modules/*
 cookies.txt
 # Local Lighthouse reports (not committed)
 docs/measurements/lighthouse-*
+api/wwwroot/

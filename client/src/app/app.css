@@ -1,57 +1,70 @@
-.skip-link {
-  position: absolute;
-  left: -9999px;
-}
-.skip-link:focus {
-  left: 1rem;
-  top: 1rem;
-  z-index: 10;
-  padding: 0.5rem 0.75rem;
-  background: var(--surface);
-  border: 2px solid var(--accent);
-}
-
-.site-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 1rem clamp(1rem, 4vw, 2rem);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
-
-.brand {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text);
+/* A CSS stand-in for the original Adobe Edge banner: a photo collage panning behind the title. */
+.banner {
+  position: relative;
+  display: block;
+  height: clamp(10rem, 30vw, 20rem);
+  overflow: hidden;
+  background: #000;
+  border-radius: 0 0 10px 10px;
   text-decoration: none;
 }
 
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
+.banner-track {
+  opacity: 0.85;
+  animation: pan 60s linear infinite;
 }
 
-nav a.active {
+.banner-collage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (min-width: 576px) {
+  .banner-collage {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.banner-collage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.banner-title {
+  position: absolute;
+  left: clamp(1rem, 4vw, 2.5rem);
+  right: 1rem;
+  bottom: clamp(0.75rem, 3vw, 2rem);
+  margin: 0;
+  font-family: Handlee, Tahoma, sans-serif;
+  font-size: clamp(1.25rem, 3.5vw, 2.25rem);
   font-weight: 700;
+  line-height: 1.2;
+  color: #fcf9f9;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 85%);
 }
 
-.who {
-  color: var(--muted);
+.banner:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -6px;
 }
 
-.banner {
-  margin: 1rem clamp(1rem, 4vw, 2rem) 0;
+@keyframes pan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
 }
 
-main {
-  padding: 1.5rem clamp(1rem, 4vw, 2rem) 3rem;
-  max-width: 72rem;
-  margin: 0 auto;
+@media (prefers-reduced-motion: reduce) {
+  .banner-track {
+    animation: none;
+  }
 }
 
 main:focus {
