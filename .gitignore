@@ -12,3 +12,5 @@ cookies.txt
 # Local Lighthouse reports (not committed)
 docs/measurements/lighthouse-*
 api/wwwroot/
+cookies.txtapi/wwwroot/
+
