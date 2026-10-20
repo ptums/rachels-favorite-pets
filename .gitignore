@@ -1,24 +1,19 @@
-# .NET build output
-bin/
-obj/
-
 # Local settings and secrets (never commit)
 .env
 .env.*
 !.env.example
-**/appsettings.Local.json
-node_modules/*
-# Local Lighthouse reports (not committed)
-docs/measurements/lighthouse-*
-api/wwwroot/
-
 
 node_modules/
 .angular/
 dist/
+
+# Built client, copied into the API
 api/wwwroot/
+
+# Local Lighthouse reports (not committed)
+docs/measurements/lighthouse-*
 
 # Local scratch output (never commit)
 **/cookies.txt
-run-output.txt
-install-output.txt
+legacy/run-output.txt
+legacy/install-output.txt

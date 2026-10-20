@@ -1,12 +1,11 @@
 services:
-  cosmos:
-    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    command: -jar DynamoDBLocal.jar -sharedDb -inMemory
     ports:
-      - "8081:8081" # Cosmos endpoint
-      - "1234:1234" # Data Explorer
+      - "8000:8000" # DynamoDB endpoint
 
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    command: azurite-blob --blobHost 0.0.0.0 --skipApiVersionCheck
+  s3:
+    image: adobe/s3mock:latest
     ports:
-      - "10000:10000" # Blob service
+      - "9090:9090" # S3 endpoint (HTTP)

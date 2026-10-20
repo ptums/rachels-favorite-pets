@@ -38,9 +38,9 @@ Lighthouse 13.5.0, default mobile emulation (412 px wide), Chrome headless.
 | Measure                                  | Result                                                                                        |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `npm audit`, `client/`                   | 0 total (0 critical, 0 high, 0 moderate, 0 low)                                               |
-| `npm audit`, repo root (legacy Node app) | 3 high, 3 total. Unchanged from baseline; the legacy app is still in the repo                 |
+| `npm audit`, `legacy/` (original Node app) | 3 high, 3 total. Unchanged from baseline; the legacy app is still in the repo                 |
 | Client unit tests (Vitest)               | 18 passed / 18 (3 files)                                                                      |
-| API tests (`dotnet test`)                | 0 tests in `tests/Api.Tests`                                                                  |
+| API tests (`api/`)                       | 0 tests; `api/package.json` has no `test` script                                              |
 | Fresh install + build of `client/`       | `npm ci` 3.2 s (warm npm cache), `ng build` 2.5 s                                             |
 | Fresh clone to running app, README only  | Not measurable yet: README.md still describes the legacy app and has no setup steps (TWS-23) |
 
@@ -55,4 +55,4 @@ Lighthouse 13.5.0, default mobile emulation (412 px wide), Chrome headless.
 6. Bringing back the original look costs about 300 KiB, almost all banner photos; resizing them or using
    WebP is the obvious next saving. `ng serve --configuration production` reports about 1.8 MB and performance 56 because of dev-server
    scripts; measure the built `dist/` instead.
-7. The client has 0 audit findings; the 3 high are all in the legacy Node app that is still at the repo root.
+7. The client has 0 audit findings; the 3 high are all in the legacy Node app, now in `legacy/`.
