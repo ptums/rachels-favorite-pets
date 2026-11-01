@@ -95,4 +95,4 @@ Stack: Angular, Node.js + TypeScript, Express 5, AWS SDK for JavaScript v3, Dyna
 | [docs/RESULTS.md](docs/RESULTS.md)       | Lighthouse, `npm audit`, fresh-clone and delete checks  |
 | [docs/AGENT-LOG.md](docs/AGENT-LOG.md)   | Time spent with the agent, per ticket                   |
 
-It is local-only on purpose, with no CI and no automated tests. Verification was by hand, and it is logged in docs/RESULTS.md. Next steps I left open: a GSI so `GET /photos` doesn't scan the whole table, a deploy to Lambda and API Gateway with the client on S3 and CloudFront, and the Lighthouse fixes for LCP, images and unused CSS.
+It is local-only on purpose, with no CI. The client has 18 unit tests (`npm test -- --watch=false` in `client/`). The API was verified by hand, and those checks are logged in docs/RESULTS.md. Next steps I left open: a GSI so `GET /photos` doesn't scan the whole table, a deploy to Lambda and API Gateway with the client on S3 and CloudFront, and the Lighthouse fixes for LCP, images and unused CSS.

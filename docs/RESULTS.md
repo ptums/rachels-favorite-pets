@@ -29,7 +29,7 @@ My first measurement was invalid: it ran against the Angular dev server, which s
 
 `npm audit` in `api/` on Oct 20 2026: 0 vulnerabilities (147 packages audited, including transitive ones). This is a point-in-time check against the npm advisory database, not a guarantee.
 
-Re-run Nov 1 2026: 2 new high alerts had appeared (body-parser, multer). `npm audit fix` moved body-parser 2.3.0 to 2.4.0 and multer 2.4.0 to 2.5.0, and `npm audit` in `api/` is back to 0. `npm run typecheck` passes.
+Re-run Nov 1 2026: 2 new high alerts had appeared (body-parser, multer). `npm audit fix` moved body-parser 2.3.0 to 2.4.0 and multer 2.4.0 to 2.5.0, and `npm audit` in `api/` is back to 0. `npm run typecheck` passes. In `client/`, Angular moved to 22.2.4 (build and CLI 22.2.5, which brings vite 8.3.5), and an `overrides` entry pins minimatch to 11.0.3 for the eslint tools. `npm audit` in `client/` is 0, and lint, build and the 18 unit tests pass. `legacy/` is not changed, so its multer alert stays.
 
 ## Fresh-clone setup
 
