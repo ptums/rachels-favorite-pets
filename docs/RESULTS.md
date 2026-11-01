@@ -29,6 +29,8 @@ My first measurement was invalid: it ran against the Angular dev server, which s
 
 `npm audit` in `api/` on Oct 20 2026: 0 vulnerabilities (147 packages audited, including transitive ones). This is a point-in-time check against the npm advisory database, not a guarantee.
 
+Re-run Nov 1 2026: 2 new high alerts had appeared (body-parser, multer). `npm audit fix` moved body-parser 2.3.0 to 2.4.0 and multer 2.4.0 to 2.5.0, and `npm audit` in `api/` is back to 0. `npm run typecheck` passes.
+
 ## Fresh-clone setup
 
 Oct 8 2026, macOS, following only the "Try it" steps in the README (open mode) from a new clone of `master` into `/tmp/fresh-test`, with brand-new emulator containers:

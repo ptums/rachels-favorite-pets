@@ -4,7 +4,7 @@ Rachel's Favorite Pets is a small photo gallery. Visitors browse and search anim
 
 I first built it around 2015 with Express, Passport and MySQL. It no longer ran: the README had no setup steps, `package.json` was missing at least 5 of the packages the code imports, and `npm start` failed on the first line. The original is kept in `legacy/` for comparison.
 
-This is the migrated version: Angular on the front, a Node.js + TypeScript API, Amazon DynamoDB for records and Amazon S3 for photos. I did the migration with Claude Code as a working partner, to see how far AI could get me in a stack I had never used. It runs locally against emulators, so you don't need an AWS account to try it.
+This is the migrated version: Angular on the front, a Node.js + TypeScript API, Amazon DynamoDB for records and Amazon S3 for photos. I did the migration with Claude Code as a working partner, to see how AI changes the work on a real migration. The new parts for me were DynamoDB and running AWS services locally on emulators. It runs locally against emulators, so you don't need an AWS account to try it.
 
 I wrote about the migration here: [Modernizing Rachel's Favorite Pets with AI](https://tumulty.me/words/modernizing-rachels-favorite-pets-with-ai).
 
@@ -15,10 +15,10 @@ I wrote about the migration here: [Modernizing Rachel's Favorite Pets with AI](h
 | Runs from the repo  | No (`Cannot find module 'express'`) | Yes, 17 seconds from `git clone` |
 | Setup steps         | None                              | 1 section, works on the first try  |
 | Packages declared   | 3 (5+ more imported, not listed)  | All, with a lock file              |
-| `npm audit`         | 3 high                            | 0                                  |
+| `npm audit` (API)   | 3 high                            | 0                                  |
 | Lighthouse (mobile) | Never ran                         | 85 / 100 / 96 / 100                |
 
-Lighthouse scores are Performance, Accessibility, Best Practices and SEO. The full numbers and how they were measured are in [docs/RESULTS.md](docs/RESULTS.md). The state of the old app is in [BASELINE.md](BASELINE.md).
+Lighthouse scores are Performance, Accessibility, Best Practices and SEO. The full numbers and how they were measured are in [docs/RESULTS.md](docs/RESULTS.md). The state of the old app is in [BASELINE.md](BASELINE.md). The `legacy/` folder is kept as it was, so its old `multer` alert stays on purpose.
 
 ## How it works
 
